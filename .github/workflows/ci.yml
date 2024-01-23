@@ -391,7 +391,7 @@ jobs:
           > test/test_python.py
     #-------- TESTS -------
     - name: Run tests
-      if: ${{ contains(needs.select.outputs.test-set, matrix.ytdl-test-set ) }}
+#      if: ${{ contains(needs.select.outputs.test-set, matrix.ytdl-test-set ) }}
       continue-on-error: ${{ matrix.ytdl-test-set == 'download' || matrix.python-impl == 'jython' }}
       env:
         YTDL_TEST_SET: ${{ matrix.ytdl-test-set }}
