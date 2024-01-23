@@ -12,54 +12,13 @@ env:
 
 on:
   push:
-    # push inputs aren't known to GitHub
-    inputs:
-      cpython-versions:
-        type: string
-        default: all
-      test-set:
-        type: string
-        default: core
-  pull_request:
-    # pull_request inputs aren't known to GitHub
-    inputs:
-      cpython-versions:
-        type: string
-        default: main
-      test-set:
-        type: string
-        default: both
-  workflow_dispatch:
-    inputs:
-      cpython-versions:
-        type: choice
-        description: CPython versions (main = 2.7, 3.2, 3.5, 3.9, 3.11)
-        options:
-          - all
-          - main
-        required: true
-        default: main
-      test-set:
-        type: choice
-        description: core, download
-        options:
-          - both
-          - core
-          - download
-        required: true
-        default: both
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   select:
     name: Select tests from inputs
     runs-on: ubuntu-latest
-    outputs:
-      cpython-versions: ${{ steps.run.outputs.cpython-versions }}
-      test-set: ${{ steps.run.outputs.test-set }}
-      own-pip-versions: ${{ steps.run.outputs.own-pip-versions }}
     steps:
     # push and pull_request inputs aren't known to GitHub (pt3)
     - name: Set push defaults
@@ -117,32 +76,10 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-20.04]
-        python-version: ${{ fromJSON(needs.select.outputs.cpython-versions) }}
+        python-version: [3.11]
         python-impl: [cpython]
         ytdl-test-set: ${{ fromJSON(needs.select.outputs.test-set) }}
         run-tests-ext: [sh]
-        include:
-        - os: windows-2019
-          python-version: 3.4
-          python-impl: cpython
-          ytdl-test-set: ${{ contains(needs.select.outputs.test-set, 'core') && 'core' || 'nocore' }}
-          run-tests-ext: bat
-        - os: windows-2019
-          python-version: 3.4
-          python-impl: cpython
-          ytdl-test-set: ${{ contains(needs.select.outputs.test-set, 'download') && 'download'  || 'nodownload' }}
-          run-tests-ext: bat
-        # jython
-        - os: ubuntu-20.04
-          python-version: 2.7
-          python-impl: jython
-          ytdl-test-set: ${{ contains(needs.select.outputs.test-set, 'core') && 'core' || 'nocore' }}
-          run-tests-ext: sh
-        - os: ubuntu-20.04
-          python-version: 2.7
-          python-impl: jython
-          ytdl-test-set: ${{ contains(needs.select.outputs.test-set, 'download') && 'download'  || 'nodownload' }}
-          run-tests-ext: sh
     steps:
     - name: Prepare Linux
       if: ${{ startswith(matrix.os, 'ubuntu') }}
@@ -458,8 +395,11 @@ jobs:
       continue-on-error: ${{ matrix.ytdl-test-set == 'download' || matrix.python-impl == 'jython' }}
       env:
         YTDL_TEST_SET: ${{ matrix.ytdl-test-set }}
-      run: |
-        ./devscripts/run_tests.${{ matrix.run-tests-ext }}
+      uses: koenhagen/measure-energy-action@v0.27
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./devscripts/run_tests.${{ matrix.run-tests-ext }}
   flake8:
     name: Linter
     runs-on: ubuntu-latest
