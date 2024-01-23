@@ -78,7 +78,7 @@ jobs:
         os: [ubuntu-20.04]
         python-version: [3.11]
         python-impl: [cpython]
-        ytdl-test-set: ${{ fromJSON(needs.select.outputs.test-set) }}
+        ytdl-test-set: [core]
         run-tests-ext: [sh]
     steps:
     - name: Prepare Linux
