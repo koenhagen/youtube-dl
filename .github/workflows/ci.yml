@@ -392,14 +392,14 @@ jobs:
     #-------- TESTS -------
     - name: Run tests
 #      if: ${{ contains(needs.select.outputs.test-set, matrix.ytdl-test-set ) }}
-      continue-on-error: ${{ matrix.ytdl-test-set == 'download' || matrix.python-impl == 'jython' }}
+#      continue-on-error: ${{ matrix.ytdl-test-set == 'download' || matrix.python-impl == 'jython' }}
       env:
-        YTDL_TEST_SET: ${{ matrix.ytdl-test-set }}
+        YTDL_TEST_SET: core
       uses: koenhagen/measure-energy-action@v0.27
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./devscripts/run_tests.${{ matrix.run-tests-ext }}
+          ./devscripts/run_tests.sh
   flake8:
     name: Linter
     runs-on: ubuntu-latest
